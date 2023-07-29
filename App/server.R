@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
   })
   
   getTitle1 <- reactiveVal("Select the Model Options on the Side Panel and Click the Run Models Button to View Results!")
-  getTitle2 <- reactiveVal("Select the Attributes of a Given House and Click the Get Prediction Button to Receive a Prediction of the Price based on the Multiple Linear Regression Model!")
+  getTitle2 <- reactiveVal("Select the Model of Interest for Making Predictions, Enter the Attributes of a Given House, and Click the Get Prediction Button to Receive a Prediction of the Price!")
   getTitle3 <- reactiveVal("")
   
   getSubTitle1 <- reactiveVal("")
@@ -300,20 +300,56 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$getPrediction, {
-    
-    getTitle2("The Price of a House with those Attributes Rounded to the Nearest Dollar is Predicted to be:")
-    
+
     newData <- getData()
+    
     set.seed(558)
+    
     trainSplit <- input$trainSplit
     splitIndexes <- createDataPartition(newData$price, p=trainSplit, list=FALSE)
     dataTrain <- newData[splitIndexes, ]
     dataTest <- newData[-splitIndexes, ]
     
-    predictModel <- train(price ~ ., data = dataTrain,
-          method = "lm",
-          preProcess = c("center", "scale"),
-          trControl = trainControl(method = "cv", number = 5))
+    withProgress(message='Please wait',detail='This may take a few minutes...', 
+                 value=0, {
+    
+    n <- 2
+    
+    incProgress(1/n, detail = paste("Running Selected Model..."))
+    
+    if(input$predictModelType == "predictWithMLR"){
+      predictModel <- train(price ~ ., data = dataTrain,
+                            method = "lm",
+                            preProcess = c("center", "scale"),
+                            trControl = trainControl(method = "cv", number = 5))
+      predictionTitle <- "Multiple Linear Regression Model,"
+      
+    } else if (input$predictModelType == "predictWithBT") {
+      predictModel <- train(price ~ ., data = dataTrain,
+                            method = "treebag",
+                            preProcess = c("center", "scale"),
+                            trControl = trainControl(method = "repeatedcv", 
+                                                     number = 5, 
+                                                     repeats= 3))
+      predictionTitle <- "Bagged Tree Regression Model,"
+      
+    } else if (input$predictModelType == "predictWithRF") {
+      mtryValues <- data.frame(mtry=1:12) 
+      predictModel <- train(price ~ ., data = dataTrain,
+                            method = "rf",
+                            preProcess = c("center", "scale"),
+                            trControl = trainControl(method = "repeatedcv", 
+                                                     number = 5, 
+                                                     repeats= 3),
+                            tuneGrid=mtryValues)
+      predictionTitle <- "Random Forest Model,"
+    }
+    
+    getTitle2(paste("Based on the", 
+                    predictionTitle,
+                    " the Price of a House with those Attributes Rounded to the Nearest Dollar is Predicted to be:"))
+    
+    incProgress(1/n, detail = paste("Making Prediction..."))
     
     newPredictData <- data.frame(area=input$predictEntryArea,
                                  bedrooms=input$predictEntryBedrooms,
@@ -333,6 +369,8 @@ shinyServer(function(input, output, session) {
     finalPrediction <- dollar(Prediction)
     
     getTitle3(finalPrediction)
+    
+    })
     
   })
   
