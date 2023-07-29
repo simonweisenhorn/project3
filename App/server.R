@@ -2,6 +2,7 @@
 library(shiny)
 library(tidyverse)
 library(caret)
+library(scales)
 
 
 shinyServer(function(input, output, session) {
@@ -34,7 +35,9 @@ shinyServer(function(input, output, session) {
     getData()
   })
   
-  getTitle <- reactiveVal("Select the Model Options on the Side Panel and Click the Run Models Button to View Results!")
+  getTitle1 <- reactiveVal("Select the Model Options on the Side Panel and Click the Run Models Button to View Results!")
+  getTitle2 <- reactiveVal("Select the Attributes of a Given House and Click the Get Prediction Button to Receive a Prediction of the Price based on the Multiple Linear Regression Model!")
+  getTitle3 <- reactiveVal("")
   
   getSubTitle1 <- reactiveVal("")
   getSubTitle2 <- reactiveVal("")
@@ -49,8 +52,16 @@ shinyServer(function(input, output, session) {
   getDescTitle7 <- reactiveVal("")
   getDescTitle8 <- reactiveVal("")
 
-  output$text_header <- renderUI({
-    h1(getTitle(), align = "center")
+  output$text_header1 <- renderUI({
+    h1(getTitle1(), align = "center")
+  })
+  
+  output$text_header2 <- renderUI({
+    h1(getTitle2(), align = "center")
+  })
+  
+  output$text_header3 <- renderUI({
+    h1(getTitle3(), align = "center")
   })
   
   output$subtext_header1 <- renderUI({
@@ -251,7 +262,7 @@ shinyServer(function(input, output, session) {
     
     incProgress(1/n, detail = paste("Finished!"))})
     
-    getTitle("Here are the Model Results!")
+    getTitle1("Here are the Model Results!")
     
     getSubTitle1("The following are fit statistics as well as appropriate summaries on the training data for each model:")
     
@@ -285,6 +296,43 @@ shinyServer(function(input, output, session) {
     getDescTitle8(paste("Based on the given inputs and fit statistics above, 
                         the best model for predicting price is the ", 
                         testResults$Model[which.min(testResults$RMSE)]))
+    
+  })
+  
+  observeEvent(input$getPrediction, {
+    
+    getTitle2("The Price of a House with those Attributes Rounded to the Nearest Dollar is Predicted to be:")
+    
+    newData <- getData()
+    set.seed(558)
+    trainSplit <- input$trainSplit
+    splitIndexes <- createDataPartition(newData$price, p=trainSplit, list=FALSE)
+    dataTrain <- newData[splitIndexes, ]
+    dataTest <- newData[-splitIndexes, ]
+    
+    predictModel <- train(price ~ ., data = dataTrain,
+          method = "lm",
+          preProcess = c("center", "scale"),
+          trControl = trainControl(method = "cv", number = 5))
+    
+    newPredictData <- data.frame(area=input$predictEntryArea,
+                                 bedrooms=input$predictEntryBedrooms,
+                                 bathrooms=input$predictEntryBathrooms,
+                                 stories=input$predictEntryStories,
+                                 mainroad=input$predictEntryMainroad,
+                                 guestroom=input$predictEntryGuestroom,
+                                 basement=input$predictEntryBasement,
+                                 hotwaterheating=input$predictEntryHotwaterheating,
+                                 airconditioning=input$predictEntryAirconditioning,
+                                 parking=input$predictEntryParking,
+                                 prefarea=input$predictEntryPrefarea,
+                                 furnishingstatus=input$predictEntryFurnished)
+    
+    Prediction <- predict(predictModel, newdata = newPredictData)
+    
+    finalPrediction <- dollar(Prediction)
+    
+    getTitle3(finalPrediction)
     
   })
   
