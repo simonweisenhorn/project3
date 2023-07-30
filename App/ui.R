@@ -25,8 +25,14 @@ fluidPage(theme = shinytheme("cerulean"),
                                              deleteFile=FALSE),
                                     align="center"),
                                 h3("Purpose of this App", align="center"),
-                                p("The purpose of this app is to show the data",
-                                  align="center"),
+                                p("The purpose of this app is to allow users an
+                                  interactive and exploratory experience with 
+                                  some housing data, while also avoiding the need 
+                                  to know how to code in R. The user should be able to adjust
+                                  or customize all of the inputs for the code running
+                                  on the backend through simple and easy to understand
+                                  widgets, simplifying the barrier between the 
+                                  user and the analysis."),
                                 h3("Data Source", align="center"),
                                 p("The data has been sourced from Kaggle",
                                   align="center"),
@@ -458,8 +464,11 @@ fluidPage(theme = shinytheme("cerulean"),
                                    after making adjustments!"),
                                 br(),
                                 dataTableOutput("dataTable"),
+                                h3("Interested in saving the data? Click the 
+                                    download button below!"),
+                                downloadButton('downloadCSV',"Download", 
+                                               style = "color: #428bca;"),
                                 br()
-                                
                               )
                             )
                    ),

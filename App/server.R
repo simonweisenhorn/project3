@@ -622,7 +622,7 @@ shinyServer(function(input, output, session) {
                      "mainroad", "guestroom", "basement", "hotwaterheating",
                      "airconditioning", "parking", "prefarea", "furnishingstatus")
       
-      newData <- newData %>% 
+      newDataSubsetted <- newData %>% 
         filter(price >= input$lowPriceRange,
                price <= input$highPriceRange,
                area >= input$lowAreaRange,
@@ -640,14 +640,39 @@ shinyServer(function(input, output, session) {
                furnishingstatus %in% input$furnishedSubset) %>%
         select(input$columnSubsets[input$columnSubsets %in% variables]) 
       
+      datasetInput <- reactive({newDataSubsetted})
+      
+      output$downloadCSV <- downloadHandler(
+        filename = function() {
+          paste("SubsettedHousingData", ".csv", sep = "")
+        },
+        content = function(file) {
+          write.csv(datasetInput(), file, row.names = FALSE)
+        }
+      )
+      
       
       output$dataTable <- renderDataTable({
-      datatable(newData, options = list(pageLength = 10,
+      datatable(newDataSubsetted, options = list(pageLength = 10,
                                         lengthMenu = c(10, 25, 50, 100), 
                                         scrollX = T))
-    })
+      })
+      
+
     
   })
+  
+  datasetInput <- reactive({getData()})
+  
+  output$downloadCSV <- downloadHandler(
+    filename = function() {
+      paste("NonSubsettedHousingData", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
   
   
 })
