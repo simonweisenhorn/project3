@@ -6,6 +6,13 @@ library(shinythemes)
 
 fluidPage(theme = shinytheme("cerulean"),
           tags$head(tags$style(".shiny-notification {position: fixed; top: 40%;left: 50%")),
+          # section below allows in-line LaTeX via $ in mathjax.
+          tags$div(HTML("<script type='text/x-mathjax-config' >
+            MathJax.Hub.Config({
+            tex2jax: {inlineMath: [['$','$']]}
+            });
+            </script >
+            ")),
         navbarPage("Navigation Tabs",
                    tabPanel("About",
                             mainPanel(
@@ -45,9 +52,28 @@ fluidPage(theme = shinytheme("cerulean"),
                               tabPanel("Modeling Info",
                                        sidebarLayout(
                                          sidebarPanel(
+                                           h2(strong("Model Choice")),
+                                           br(),
+                                           radioButtons("modelTypeInfo", 
+                                                        "Which Model Would You Like to Learn More About?",
+                                                        c("Multiple Linear Regression Model" = "aboutMLR",
+                                                          "Bagged Tree Regression Model" = "aboutBT",
+                                                          "Random Forest Model" = "aboutRF"),
+                                                        selected = character(0))
                                            
                                          ),
                                          mainPanel(
+                                           uiOutput("text_header4"),
+                                           br(),
+                                           uiOutput("subtext_header4"),
+                                           uiOutput("paragraph1"),
+                                           uiOutput("modelMath"),
+                                           uiOutput("subtext_header5"),
+                                           uiOutput("paragraph2"),
+                                           uiOutput("subtext_header6"),
+                                           uiOutput("paragraph3"),
+                                           br(),
+                                           br()
                                 
                                          )
                                        )
