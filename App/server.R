@@ -3,6 +3,7 @@ library(shiny)
 library(tidyverse)
 library(caret)
 library(scales)
+library(DT)
 
 
 shinyServer(function(input, output, session) {
@@ -19,17 +20,6 @@ shinyServer(function(input, output, session) {
   getData <- reactive({
     newData <- read_csv("../Housing.csv")
   })
-  
-  
-  observeEvent(input$trainSplit, {
-    change <- 1-input$trainSplit
-    updateNumericInput(session, "testSplit", value=change)
-  })
-  
-  observeEvent(input$testSplit, {
-    change <- 1-input$testSplit
-    updateNumericInput(session, "trainSplit", value=change)
-    })
   
   output$table <- renderTable({
     getData()
@@ -133,6 +123,55 @@ shinyServer(function(input, output, session) {
     p(getParagraph3(), align = "left")
   })
 
+  
+  
+  observeEvent(input$trainSplit, {
+    change <- 1-input$trainSplit
+    updateNumericInput(session, "testSplit", value=change)
+  })
+  
+  observeEvent(input$testSplit, {
+    change <- 1-input$testSplit
+    updateNumericInput(session, "trainSplit", value=change)
+  })
+  
+  observeEvent(input$lowAreaRange | input$highAreaRange, {
+    
+    updateSliderInput(session, "areaRange", value=c(input$lowAreaRange, input$highAreaRange))
+    
+  })
+  
+  observeEvent(input$areaRange, {
+    
+    value <- input$areaRange
+    lower <- value[1]
+    upper <- value[2]
+    
+    updateNumericInput(session, "lowAreaRange", value=lower)
+    updateNumericInput(session, "highAreaRange", value=upper)
+    
+  })
+  
+  observeEvent(input$lowPriceRange | input$highPriceRange, {
+    
+    updateSliderInput(session, "priceRange", value=c(input$lowPriceRange, input$highPriceRange))
+    
+  })
+  
+  observeEvent(input$priceRange, {
+    
+    value <- input$priceRange
+    lower <- value[1]
+    upper <- value[2]
+    
+    updateNumericInput(session, "lowPriceRange", value=lower)
+    updateNumericInput(session, "highPriceRange", value=upper)
+    
+  })
+  
+  
+  
+  
   
   observeEvent(input$modelTypeInfo, {
     if(input$modelTypeInfo == "aboutMLR"){
@@ -563,6 +602,49 @@ shinyServer(function(input, output, session) {
     
     getTitle3(finalPrediction)
     
+    })
+    
+  })
+  
+  output$dataTable <- renderDataTable({
+    newData <- getData()
+    datatable(newData, options = list(pageLength = 10,
+                                      lengthMenu = c(10, 25, 50, 100), 
+                                      scrollX = T))
+  })
+  
+  observeEvent(input$subsetData, {
+    
+    
+      newData <- getData()
+      
+      variables <- c("price", "area", "bedrooms", "bathrooms", "stories",
+                     "mainroad", "guestroom", "basement", "hotwaterheating",
+                     "airconditioning", "parking", "prefarea", "furnishingstatus")
+      
+      newData <- newData %>% 
+        filter(price >= input$lowPriceRange,
+               price <= input$highPriceRange,
+               area >= input$lowAreaRange,
+               area <= input$highAreaRange,
+               bedrooms %in% input$bedroomSubset,
+               bathrooms %in% input$bathroomSubset,
+               stories %in% input$storiesSubset,
+               mainroad %in% input$mainroadSubset,
+               guestroom %in% input$guestroomSubset,
+               basement %in% input$basementSubset,
+               hotwaterheating %in% input$hotWaterHeatingSubset,
+               airconditioning %in% input$airConditioningSubset,
+               parking %in% input$parkingSubset,
+               prefarea %in% input$prefareaSubset,
+               furnishingstatus %in% input$furnishedSubset) %>%
+        select(input$columnSubsets[input$columnSubsets %in% variables]) 
+      
+      
+      output$dataTable <- renderDataTable({
+      datatable(newData, options = list(pageLength = 10,
+                                        lengthMenu = c(10, 25, 50, 100), 
+                                        scrollX = T))
     })
     
   })
