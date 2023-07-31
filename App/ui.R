@@ -73,9 +73,9 @@ fluidPage(theme = shinytheme("cerulean"),
                             tabsetPanel(
                               tabPanel("Graphs",
                                        sidebarLayout(
-                                         sidebarPanel(h2("Select a Graph or Summary"),
+                                         sidebarPanel(h2("Select a Graph"),
                                            radioButtons("typeOfGraph", 
-                                                        "Which Type of Graph or Summary Would Like to See?",
+                                                        "Which Type of Graph Would You Like to See?",
                                                         c("A Histogram of a Single Numeric Variable" = "hist",
                                                           "A Piechart of a Single Categorical Variable" = "pie",
                                                           "A Scatter Plot of Two Numerical Variables" = "scatter",
@@ -226,7 +226,27 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                              numericInput("highRangeBox",
                                                                                           "Choose a Maximum for the Numeric Variable:",
                                                                                           min = 0, max = 15000000, value = 15))),
-                                           conditionalPanel(condition = "input.typeOfGraph == 'contingency'",
+                                           br(),
+                                           actionButton("runGraph", strong("Create Graph"),style = "color: #428bca;")
+                              ),
+                              mainPanel(
+                                uiOutput("text_header5"),
+                                br(),
+                                uiOutput("subtext_header7"),
+                                plotOutput("finalPlot")
+                              ))
+                            
+                   ),
+                   tabPanel("Summaries",
+                            sidebarLayout(
+                              sidebarPanel(h2("Select a Summary"),
+                                           radioButtons("typeOfSummary", 
+                                                        "Which Type of Summary Would You Like to See?",
+                                                        c("A Single or Multi-Level Contingency Table on One or More 
+                                                          Categorical Variables" = "contingency",
+                                                          "A Numerical Summary of a Single Numeric Variable" = "summary"),
+                                                        selected = character(0)),
+                                           conditionalPanel(condition = "input.typeOfSummary == 'contingency'",
                                                             radioButtons("typeOfContingencyTable", 
                                                                          "How Many Levels Should the Contingency Table Have?",
                                                                          c("One" = "one",
@@ -301,8 +321,8 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                                             "PreferredArea" = "prefarea",
                                                                                             "FurnishingStatus" = "furnishingstatus"),
                                                                                           selected = character(0)))),
-                                           conditionalPanel(condition = "input.typeOfGraph == 'summary'",
-                                                            radioButtons("typeOfSummary", 
+                                           conditionalPanel(condition = "input.typeOfSummary == 'summary'",
+                                                            radioButtons("typeOfSummaryNum", 
                                                                          "Which Numeric Variable Should Be Used?",
                                                                          c("Price" = "price",
                                                                            "Area" = "area",
@@ -317,31 +337,25 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                            "No" = "no"),
                                                                          selected = "no"),
                                                             conditionalPanel(condition = "input.summarySubset == 'yes'",
-                                                                             numericInput("lowRange",
+                                                                             numericInput("lowRangeSum",
                                                                                           "Choose a Minimum for the Numeric Variable:",
                                                                                           min = 0, max = 15000000, value = 1),
-                                                                             numericInput("highRange",
+                                                                             numericInput("highRangeSum",
                                                                                           "Choose a Maximum for the Numeric Variable:",
                                                                                           min = 0, max = 15000000, value = 15))),
                                            br(),
-                                           actionButton("runGraph", strong("Create Graph/Summary"),style = "color: #428bca;")
-                                           
-                                           
-                                           
-                                           
-                                                            
-                                
+                                           actionButton("runSummary", strong("Create Summary"),style = "color: #428bca;")
                               ),
                               mainPanel(
-                                uiOutput("text_header5"),
+                                uiOutput("text_header6"),
                                 br(),
-                                uiOutput("subtext_header7"),
-                                plotOutput("finalPlot"),
-                                verbatimTextOutput("finalSum")
-                                
-                              )
-                            )
-                   ),
+                                uiOutput("subtext_header8"),
+                                verbatimTextOutput("finalSummary1"),
+                                uiOutput("subtext_header9"),
+                                dataTableOutput("finalSummary2")
+                              ))
+                            
+                   ))),
                    tabPanel("Modeling",
                             tabsetPanel(
                               tabPanel("Modeling Info",

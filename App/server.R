@@ -35,8 +35,10 @@ shinyServer(function(input, output, session) {
                            Price!")
   getTitle3 <- reactiveVal("")
   getTitle4 <- reactiveVal("Select a Model on the Left to Learn More About it!")
-  getTitle5 <- reactiveVal("Select a Graph or Summary on the Left and Click 
-                           Create Graph/Summary to View it Here!")
+  getTitle5 <- reactiveVal("Select a Graph on the Left and Click 
+                           Create Graph to View it Here!")
+  getTitle6 <- reactiveVal("Select a Summary on the Left and Click 
+                           Create Summary to View it Here!")
   
   getSubTitle1 <- reactiveVal("")
   getSubTitle2 <- reactiveVal("")
@@ -45,6 +47,8 @@ shinyServer(function(input, output, session) {
   getSubTitle5 <- reactiveVal("")
   getSubTitle6 <- reactiveVal("")
   getSubTitle7 <- reactiveVal("")
+  getSubTitle8 <- reactiveVal("")
+  getSubTitle9 <- reactiveVal("")
   
   getDescTitle1 <- reactiveVal("")
   getDescTitle2 <- reactiveVal("")
@@ -74,6 +78,9 @@ shinyServer(function(input, output, session) {
   output$text_header5 <- renderUI({
     h1(getTitle5(), align = "center")
   })
+  output$text_header6 <- renderUI({
+    h1(getTitle6(), align = "center")
+  })
   
   
   output$subtext_header1 <- renderUI({
@@ -96,6 +103,12 @@ shinyServer(function(input, output, session) {
   })
   output$subtext_header7 <- renderUI({
     h4(getSubTitle7(), align = "center")
+  })
+  output$subtext_header8 <- renderUI({
+    h4(getSubTitle8(), align = "left")
+  })
+  output$subtext_header9 <- renderUI({
+    h4(getSubTitle9(), align = "left")
   })
   
   
@@ -139,11 +152,9 @@ shinyServer(function(input, output, session) {
   
   
   observeEvent(input$runGraph, {
-    if (input$typeOfGraph %in% c("hist", "pie", "scatter", "bar", "box")){
-      getTitle5("Here is the Graph!")
-    } else if (input$typeOfGraph %in% c("contingency", "summary")){
-      getTitle5("Here is the Summary!")
-    }
+    
+    getTitle5("Here is the Graph!")
+
     
     newData <- getData()
     
@@ -437,29 +448,78 @@ shinyServer(function(input, output, session) {
       output$finalPlot <- renderPlot({finalGraph})
     }
     
-    if (input$typeOfGraph == "contingency"){
-      getSubTitle7("")
-      output$finalPlot <- renderPlot("")
+  })
+  
+  observeEvent(input$runSummary, {
+    getTitle6("Here is the Summary!")
+    newData <- getData()
+    if (input$typeOfSummary == "contingency"){
+      getSubTitle8("Contingency Table")
       if(input$typeOfContingencyTable == "one"){
-        finalGraph <- table(newData[, input$singleCatVar])
+        finalSum <- table(newData[, input$singleCatVar])
       }else if(input$typeOfContingencyTable == "two"){
-        finalGraph <- table(newData[, c(input$doubleCatVar1, input$doubleCatVar2)])
+        finalSum <- table(newData[, c(input$doubleCatVar1, input$doubleCatVar2)])
+      }else if(input$typeOfContingencyTable == "three"){
+        finalSum <- table(newData[, c(input$tripleCatVar1, input$tripleCatVar2, input$tripleCatVar3)])
       }
-      else if(input$typeOfContingencyTable == "three"){
-        finalGraph <- table(newData[, c(input$tripleCatVar1, input$tripleCatVar2, input$tripleCatVar3)])
-      }
-      output$finalSum <- renderPrint(finalGraph)
+      output$finalSummary1 <- renderPrint(finalSum)
       
     }
+    
+    if (input$typeOfSummary == "summary"){
+      getSubTitle9("Numeric Summary")
+      if(input$summarySubset == "no"){
+        finalSum <- newData %>% summarise(Min = min(!!sym(input$typeOfSummaryNum)),
+                                          firstQuartile = quantile(!!sym(input$typeOfSummaryNum), 0.25),
+                                          Avg=round(mean(!!sym(input$typeOfSummaryNum)),2),
+                                          Med=median(!!sym(input$typeOfSummaryNum)),
+                                          thirdQuartile = quantile(!!sym(input$typeOfSummaryNum), 0.75),
+                                          max = max(!!sym(input$typeOfSummaryNum)),
+                                          stdDev = round(sd(!!sym(input$typeOfSummaryNum)),2))
+        names(finalSum)[1] <- "Minimum"
+        names(finalSum)[2] <- "First Quartile"
+        names(finalSum)[3] <- "Average"
+        names(finalSum)[4] <- "Median"
+        names(finalSum)[5] <- "Third Quartile"
+        names(finalSum)[6] <- "Maximum"
+        names(finalSum)[7] <- "Standard Deviation"
+      }else if(input$summarySubset == "yes"){
+        
+        subsettedData <- newData %>% 
+          filter((!!sym(input$typeOfSummaryNum)) >= input$lowRangeSum,
+                 (!!sym(input$typeOfSummaryNum)) <= input$highRangeSum)
+        
+        finalSum <- subsettedData %>% summarise(Min = min(!!sym(input$typeOfSummaryNum)),
+                                          firstQuartile = quantile(!!sym(input$typeOfSummaryNum), 0.25),
+                                          Avg=round(mean(!!sym(input$typeOfSummaryNum)),2),
+                                          Med=median(!!sym(input$typeOfSummaryNum)),
+                                          thirdQuartile = quantile(!!sym(input$typeOfSummaryNum), 0.75),
+                                          max = max(!!sym(input$typeOfSummaryNum)),
+                                          stdDev = round(sd(!!sym(input$typeOfSummaryNum)),2)) 
+        names(finalSum)[1] <- "Minimum"
+        names(finalSum)[2] <- "First Quartile"
+        names(finalSum)[3] <- "Average"
+        names(finalSum)[4] <- "Median"
+        names(finalSum)[5] <- "Third Quartile"
+        names(finalSum)[6] <- "Maximum"
+        names(finalSum)[7] <- "Standard Deviation"
+      }
+
+      output$finalSummary2 <- renderDataTable({
+        datatable(finalSum, options = list(scrollX = T,
+                                           searching=F,
+                                           paging=F))
+      })
       
-      
-      
-      
+    }
+    
+    
+    
+    
     
     
     
   })
-  
   
   observeEvent(input$modelTypeInfo, {
     if(input$modelTypeInfo == "aboutMLR"){
