@@ -1087,7 +1087,6 @@ shinyServer(function(input, output, session) {
                                         lengthMenu = c(10, 25, 50, 100), 
                                         scrollX = T))
       })
-
   })
   
   #the following is if the user does not subset the data but still tries to 
