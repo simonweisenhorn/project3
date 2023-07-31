@@ -54,17 +54,36 @@ fluidPage(theme = shinytheme("cerulean"),
                                 h3("Purpose of Tabs", align="center"),
                                 p("This app is organized into 4 pages so that
                                   the user can move through each step of the 
-                                  analysis. Currently, we are on the about
-                                  page. This page is to give users a chance to
+                                  analysis. Currently, we are on the about page. 
+                                  This page is to give users a chance to
                                   be introduced to the app and provide an intution
                                   into the data source. The next page over is 
-                                  dedicated to allow the user to explore the data.
-                                  
-                                  COME BACK TO THIS
-                                  
-                                  
-                                  ",
+                                  the data exploration page and is dedicated to 
+                                  allow the user to explore the data. The page has
+                                  been split into 2 tabs so that graphs and 
+                                  summarizations were more organized. Both tabs offer
+                                  a large selection of graphs and summarizations 
+                                  for interesting combinations between different 
+                                  variables. Moreover, the third page is dedicated
+                                  to modeling the data. This page is also broken
+                                  up into multiple tabs for organizational purposes.
+                                  The first tab is for learning about each of the
+                                  three models, both mathematically as well as
+                                  verbally. The second tab is for fitting each 
+                                  of the three models in which options for every possible
+                                  argument and adjustment are provided so that the
+                                  user can properly fit each model and customize
+                                  them to their own analysis. The third tab is
+                                  for making predictions with the user's preferred
+                                  model so that they can get a predicted price of 
+                                  a house given all of the remaining attributes.
+                                  Finally, the last page is the data page and is
+                                  dedicated to displaying the dataset, allowing
+                                  the user to subset the rows and columns, as well
+                                  as downloading the dataset as a csv. Please
+                                  enjoy exploring this app!",
                                   align="center"),
+                                br(),
                                 br(),
                                 width=12
                             )
