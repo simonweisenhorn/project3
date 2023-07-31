@@ -6,27 +6,31 @@ library(scales)
 library(DT)
 library(stringr)
 library(ggrepel)
+#require libraries for the following code
 
-
+#start of server page
 shinyServer(function(input, output, session) {
   
-  
-  
   url <- a("Kaggle", href="https://www.kaggle.com/datasets/ashydv/housing-dataset")
+  #url for data source
   
+  #output for data source link on about page
   output$tab <- renderUI({
     tagList("Data Source:", url)
   })
   
-  
+  #function to get data with read_csv function
   getData <- reactive({
-    newData <- read_csv("../Housing.csv")
+    newData <- read_csv("../data/Housing.csv")
   })
   
+  #render table for data page
   output$table <- renderTable({
     getData()
   })
   
+  #The following get title cluster is for the titles on the main page that remain
+  #before the user clicks a submit button
   getTitle1 <- reactiveVal("Select the Model Options on the Side Panel and 
                            Click the Run Models Button to View Results!")
   getTitle2 <- reactiveVal("Select the Model of Interest for Making Predictions, 
@@ -40,6 +44,8 @@ shinyServer(function(input, output, session) {
   getTitle6 <- reactiveVal("Select a Summary on the Left and Click 
                            Create Summary to View it Here!")
   
+  #The following get subtitle cluster is set to blank so that they can be populated
+  #when an action button is pressed.
   getSubTitle1 <- reactiveVal("")
   getSubTitle2 <- reactiveVal("")
   getSubTitle3 <- reactiveVal("")
@@ -50,6 +56,8 @@ shinyServer(function(input, output, session) {
   getSubTitle8 <- reactiveVal("")
   getSubTitle9 <- reactiveVal("")
   
+  #The following get descriptive title cluster is set to blank so that they 
+  #can be populated when an action button is pressed.
   getDescTitle1 <- reactiveVal("")
   getDescTitle2 <- reactiveVal("")
   getDescTitle3 <- reactiveVal("")
@@ -59,10 +67,13 @@ shinyServer(function(input, output, session) {
   getDescTitle7 <- reactiveVal("")
   getDescTitle8 <- reactiveVal("")
   
+  #The following paragraph cluster is set to blank so that they 
+  #can be populated when an action button is pressed.
   getParagraph1 <- reactiveVal("")
   getParagraph2 <- reactiveVal("")
   getParagraph3 <- reactiveVal("")
 
+  #The following are to output the main title headers
   output$text_header1 <- renderUI({
     h1(getTitle1(), align = "center")
   })
@@ -82,7 +93,7 @@ shinyServer(function(input, output, session) {
     h1(getTitle6(), align = "center")
   })
   
-  
+  #The following are to output the subtitle headers
   output$subtext_header1 <- renderUI({
     h4(getSubTitle1(), align = "left")
   })
@@ -111,7 +122,7 @@ shinyServer(function(input, output, session) {
     h4(getSubTitle9(), align = "left")
   })
   
-  
+  #The following are to output the descriptive title headers
   output$desc_header1 <- renderUI({
     h5(getDescTitle1(), align = "left")
   })
@@ -137,6 +148,7 @@ shinyServer(function(input, output, session) {
     h5(getDescTitle8(), align = "left")
   })
   
+  #The following are to output the paragraphs for the model info tab
   output$paragraph1 <- renderUI({
     p(getParagraph1(), align = "left")
   })
@@ -147,17 +159,16 @@ shinyServer(function(input, output, session) {
     p(getParagraph3(), align = "left")
   })
 
-  
-  
-  
-  
+  #This chunk is for someone clicks the run graph action button
   observeEvent(input$runGraph, {
     
     getTitle5("Here is the Graph!")
-
+    #update the title
     
+    #get the data
     newData <- getData()
     
+    #conditional statement for if histogram is selected
     if (input$typeOfGraph == "hist"){
       getSubTitle7("")
       if(input$histogramSubset=="no"){
@@ -187,6 +198,7 @@ shinyServer(function(input, output, session) {
       output$finalPlot <- renderPlot({finalGraph})
     }
     
+    #conditional statement for if piechart is selected
     if (input$typeOfGraph == "pie"){
       if(input$typeOfPiechart == "mainroad"){
         getSubTitle7("Piechart of Mainroad Variable")
@@ -329,7 +341,7 @@ shinyServer(function(input, output, session) {
       }
       output$finalPlot <- renderPlot({finalGraph})
     }
-    
+    #conditional statement for if scatterplot is selected
     if (input$typeOfGraph == "scatter"){
       getSubTitle7("")
       if(input$scatterSubset == "no"){
@@ -364,7 +376,7 @@ shinyServer(function(input, output, session) {
       }
       output$finalPlot <- renderPlot({finalGraph})
     }
-    
+    #conditional statement for if barplot is selected
     if (input$typeOfGraph == "bar"){
       getSubTitle7("")
       if(input$barplotSubset == "no"){
@@ -409,7 +421,7 @@ shinyServer(function(input, output, session) {
       }
       output$finalPlot <- renderPlot({finalGraph})
     }
-    
+    #conditional statement for if boxplot is selected
     if (input$typeOfGraph == "box"){
       getSubTitle7("")
       if(input$boxplotSubset == "no"){
@@ -448,11 +460,15 @@ shinyServer(function(input, output, session) {
       output$finalPlot <- renderPlot({finalGraph})
     }
     
-  })
+  }) #end of graph tab
   
+  #The following is if someone clicks on the run summary action button
   observeEvent(input$runSummary, {
+    #update title
     getTitle6("Here is the Summary!")
+    #get data
     newData <- getData()
+    #The following is if someone wants a contingency table
     if (input$typeOfSummary == "contingency"){
       getSubTitle8("Contingency Table")
       if(input$typeOfContingencyTable == "one"){
@@ -465,7 +481,7 @@ shinyServer(function(input, output, session) {
       output$finalSummary1 <- renderPrint(finalSum)
       
     }
-    
+    #The following is if someone wants a numeric summary
     if (input$typeOfSummary == "summary"){
       getSubTitle9("Numeric Summary")
       if(input$summarySubset == "no"){
@@ -504,7 +520,6 @@ shinyServer(function(input, output, session) {
         names(finalSum)[6] <- "Maximum"
         names(finalSum)[7] <- "Standard Deviation"
       }
-
       output$finalSummary2 <- renderDataTable({
         datatable(finalSum, options = list(scrollX = T,
                                            searching=F,
@@ -512,16 +527,13 @@ shinyServer(function(input, output, session) {
       })
       
     }
-    
-    
-    
-    
-    
-    
-    
-  })
+
+  }) #end of summary tab
   
+  #The following is if someone clicks on a model info button
   observeEvent(input$modelTypeInfo, {
+    
+    #The following are explanations about the MLR model
     if(input$modelTypeInfo == "aboutMLR"){
       
       getTitle4("Multiple Linear Regression Model")
@@ -534,6 +546,7 @@ shinyServer(function(input, output, session) {
                     accurately predicts the value of the response variable 
                     based on the values of the predictor variables.")
       
+      #mathjax output
       output$modelMath <- renderUI({
         withMathJax(
           helpText("Mathematically, the multiple linear regression model can be 
@@ -567,6 +580,7 @@ shinyServer(function(input, output, session) {
                     sensitivity to outliers, and multicollinearity which occurs
                     when predictors are highly correlated with each other.")
       
+      #The following are explanations about the BT model
     }else if(input$modelTypeInfo == "aboutBT"){
       
       getTitle4("Bagged Tree Regression Model")
@@ -583,6 +597,7 @@ shinyServer(function(input, output, session) {
                     the final prediction for a new data point is the average of
                     the predictions from all the decision trees.")
       
+      #mathjax output
       output$modelMath <- renderUI({
         withMathJax(
           helpText("The mathematical process for bagged regression trees is as follows:", 
@@ -615,6 +630,7 @@ shinyServer(function(input, output, session) {
                     computationally intensive meaning that they take lots of 
                     computing power to run effectively.")
       
+      #The following are explanations about the RF model
     }else if(input$modelTypeInfo == "aboutRF"){
       
       getTitle4("Random Forest Model")
@@ -636,6 +652,7 @@ shinyServer(function(input, output, session) {
                     use all of the predictors and, instead, uses a random subset 
                     of predictors for each boostrap sample/tree fit.")
       
+      #Math jax output
       output$modelMath <- renderUI({
         withMathJax(
           helpText("The mathematical process for random forest trees is as follows:", 
@@ -678,24 +695,26 @@ shinyServer(function(input, output, session) {
     }
   })
     
-    
+  #This chunk is to update the test split to be 1-trainsplit  
   observeEvent(input$trainSplit, {
     change <- 1-input$trainSplit
     updateNumericInput(session, "testSplit", value=change)
   })
-    
+  #This chunk is to update the train split to be 1-testsplit  
   observeEvent(input$testSplit, {
     change <- 1-input$testSplit
     updateNumericInput(session, "trainSplit", value=change)
   })
   
-    
+  #The following is for if someone clicks on the run models action button 
+  #on the fitting tab  
   observeEvent(input$runModels, {
     
     set.seed(558) #setting seed for reproducibility 
     
-    newData <- getData()
+    newData <- getData() #getting data
     
+    #ensuring variables are factored
     newData$mainroad <- as.factor(newData$mainroad)
     newData$guestroom <- as.factor(newData$guestroom)
     newData$basement <- as.factor(newData$basement)
@@ -704,18 +723,21 @@ shinyServer(function(input, output, session) {
     newData$prefarea <- as.factor(newData$prefarea)
     newData$furnishingstatus <- as.factor(newData$furnishingstatus)
     
+    #Start of progress bar
     withProgress(message='Please wait',detail='This may take a few minutes...', 
                  value=0, {
     
-    n <- 6
+    n <- 6 #set for number of progress updates
     
     incProgress(1/n, detail = paste("Splitting Data..."))
-        
+    
+    #splitting data based on user input
     trainSplit <- input$trainSplit
     splitIndexes <- createDataPartition(newData$price, p=trainSplit, list=FALSE)
     dataTrain <- newData[splitIndexes, ]
     dataTest <- newData[-splitIndexes, ]
     
+    #The following are for running the MLR model
     incProgress(1/n, detail = paste("Running MLR Model..."))
     
     cvMlrFolds <- input$mlrCvFold
@@ -761,6 +783,7 @@ shinyServer(function(input, output, session) {
     
     mlrVarImp <- varImp(mlrFit, scale = FALSE)
     
+    #The following is for running the BT model
     incProgress(1/n, detail = paste("Running Bagged Tree Model..."))
     
     cvTreeFolds <- input$treeCvFold
@@ -788,6 +811,7 @@ shinyServer(function(input, output, session) {
     
     bagTreeVarImp <- varImp(bagTreeFit, scale = FALSE)
     
+    #the following is for running the random forest model
     incProgress(1/n, detail = paste("Running Random Forest Model..."))
     
     cvForestFolds <- input$forestCvFold
@@ -827,6 +851,7 @@ shinyServer(function(input, output, session) {
                         
     incProgress(1/n, detail = paste("Comparing Each Model to Test Set..."))
     
+    #creation of model result comparisons
     testResults <- rbind.data.frame(t(postResample(predict(mlrFit, 
                                                            newdata = dataTest), 
                                                    obs = dataTest$price)), 
@@ -843,6 +868,7 @@ shinyServer(function(input, output, session) {
     
     incProgress(1/n, detail = paste("Finished!"))})
     
+    #the following are for updating the text and exporting the outputs
     getTitle1("Here are the Model Results!")
     
     getSubTitle1("The following are fit statistics as well as appropriate 
@@ -889,12 +915,17 @@ shinyServer(function(input, output, session) {
     
   })
   
+  #The following is for is someone clicks on the get prediction action button
   observeEvent(input$getPrediction, {
 
+    #getting data
     newData <- getData()
     
+    #setting seed for reproducibility
     set.seed(558)
     
+    #spliting the data into training and testing split defaulting to the split 
+    #from fitting tab
     trainSplit <- input$trainSplit
     splitIndexes <- createDataPartition(newData$price, p=trainSplit, list=FALSE)
     dataTrain <- newData[splitIndexes, ]
@@ -907,6 +938,7 @@ shinyServer(function(input, output, session) {
     
     incProgress(1/n, detail = paste("Running Selected Model..."))
     
+    #Fitting the MLR model if the user selected that
     if(input$predictModelType == "predictWithMLR"){
       predictModel <- train(price ~ ., data = dataTrain,
                             method = "lm",
@@ -914,6 +946,7 @@ shinyServer(function(input, output, session) {
                             trControl = trainControl(method = "cv", number = 5))
       predictionTitle <- "Multiple Linear Regression Model,"
       
+      #Fitting the BT model if the user selected that
     } else if (input$predictModelType == "predictWithBT") {
       predictModel <- train(price ~ ., data = dataTrain,
                             method = "treebag",
@@ -923,6 +956,7 @@ shinyServer(function(input, output, session) {
                                                      repeats= 3))
       predictionTitle <- "Bagged Tree Regression Model,"
       
+      #Fitting the RF model if the user selected that
     } else if (input$predictModelType == "predictWithRF") {
       mtryValues <- data.frame(mtry=1:12) 
       predictModel <- train(price ~ ., data = dataTrain,
@@ -935,6 +969,7 @@ shinyServer(function(input, output, session) {
       predictionTitle <- "Random Forest Model,"
     }
     
+    #outputting new title
     getTitle2(paste("Based on the", 
                     predictionTitle,
                     " the Price of a House with those Attributes Rounded to the 
@@ -942,6 +977,7 @@ shinyServer(function(input, output, session) {
     
     incProgress(1/n, detail = paste("Making Prediction..."))
     
+    #creating newdata dataframe for prediction
     newPredictData <- data.frame(area=input$predictEntryArea,
                                  bedrooms=input$predictEntryBedrooms,
                                  bathrooms=input$predictEntryBathrooms,
@@ -955,51 +991,48 @@ shinyServer(function(input, output, session) {
                                  prefarea=input$predictEntryPrefarea,
                                  furnishingstatus=input$predictEntryFurnished)
     
+    #creating prediction
     Prediction <- predict(predictModel, newdata = newPredictData)
     
+    #converting number into dollar
     finalPrediction <- dollar(Prediction)
     
+    #outputting prediction
     getTitle3(finalPrediction)
     
     })
     
   })
   
-  
+  #This is to update the slider on the data page based on the numeric input for the area var
   observeEvent(input$lowAreaRange | input$highAreaRange, {
-    
     updateSliderInput(session, "areaRange", value=c(input$lowAreaRange, input$highAreaRange))
-    
   })
   
+  #This is to update the numeric inputs based on the slider on the data page for the area var
   observeEvent(input$areaRange, {
-    
     value <- input$areaRange
     lower <- value[1]
     upper <- value[2]
-    
     updateNumericInput(session, "lowAreaRange", value=lower)
     updateNumericInput(session, "highAreaRange", value=upper)
-    
   })
   
+  #This is to update the slider on the data page based on the numeric input for the price var
   observeEvent(input$lowPriceRange | input$highPriceRange, {
-    
     updateSliderInput(session, "priceRange", value=c(input$lowPriceRange, input$highPriceRange))
-    
   })
   
+  #This is to update the numeric inputs based on the slider on the data page for the price var
   observeEvent(input$priceRange, {
-    
     value <- input$priceRange
     lower <- value[1]
     upper <- value[2]
-    
     updateNumericInput(session, "lowPriceRange", value=lower)
     updateNumericInput(session, "highPriceRange", value=upper)
-    
   })
   
+  #Output of data table prior to subsets
   output$dataTable <- renderDataTable({
     newData <- getData()
     datatable(newData, options = list(pageLength = 10,
@@ -1007,15 +1040,17 @@ shinyServer(function(input, output, session) {
                                       scrollX = T))
   })
   
+  #The following is if a user clicks the subset data action button
   observeEvent(input$subsetData, {
-    
-    
-      newData <- getData()
+
+      newData <- getData() #getting data
       
+      #Creating list of variables for column subset
       variables <- c("price", "area", "bedrooms", "bathrooms", "stories",
                      "mainroad", "guestroom", "basement", "hotwaterheating",
                      "airconditioning", "parking", "prefarea", "furnishingstatus")
       
+      #filtering rows/columns based on user input
       newDataSubsetted <- newData %>% 
         filter(price >= input$lowPriceRange,
                price <= input$highPriceRange,
@@ -1034,8 +1069,9 @@ shinyServer(function(input, output, session) {
                furnishingstatus %in% input$furnishedSubset) %>%
         select(input$columnSubsets[input$columnSubsets %in% variables]) 
       
-      datasetInput <- reactive({newDataSubsetted})
+      datasetInput <- reactive({newDataSubsetted}) #saving subsetted data
       
+      #Download subsetted csv option
       output$downloadCSV <- downloadHandler(
         filename = function() {
           paste("SubsettedHousingData", ".csv", sep = "")
@@ -1045,17 +1081,17 @@ shinyServer(function(input, output, session) {
         }
       )
       
-      
+      #output of subsetted data to viewer on main page
       output$dataTable <- renderDataTable({
       datatable(newDataSubsetted, options = list(pageLength = 10,
                                         lengthMenu = c(10, 25, 50, 100), 
                                         scrollX = T))
       })
-      
 
-    
   })
   
+  #the following is if the user does not subset the data but still tries to 
+  #download the data
   datasetInput <- reactive({getData()})
   
   output$downloadCSV <- downloadHandler(
@@ -1066,8 +1102,4 @@ shinyServer(function(input, output, session) {
       write.csv(datasetInput(), file, row.names = FALSE)
     }
   )
-  
-  
-  
-})
-
+}) #End of shiny server

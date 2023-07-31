@@ -1,11 +1,12 @@
 
-
 library(shiny)
 library(shinythemes)
 library(DT)
+#Required libraries to run the following code
 
-
+#The following is the complete UI for this app
 fluidPage(theme = shinytheme("cerulean"),
+          #the line below is for centering the display bar
           tags$head(tags$style(".shiny-notification {position: fixed; top: 40%;left: 50%")),
           # section below allows in-line LaTeX via $ in mathjax.
           tags$div(HTML("<script type='text/x-mathjax-config' >
@@ -14,16 +15,20 @@ fluidPage(theme = shinytheme("cerulean"),
             });
             </script >
             ")),
+          #Start of navigation tab wrapper
         navbarPage("Navigation Tabs",
-                   tabPanel("About",
+                   tabPanel("About", #Creation of about page
                             mainPanel(
+                              #title header for about page
                                 h1("Welcome to my Housing App!", align="center"),
+                                #insert of house picture
                                 div(tags$img(src="house.png", 
                                              height="60%", 
                                              width="60%", 
                                              alt="Something went wrong", 
                                              deleteFile=FALSE),
                                     align="center"),
+                                #explanation of the purpose of the app
                                 h3("Purpose of this App", align="center"),
                                 p("The purpose of this app is to allow users an
                                   interactive, investigative and exploratory 
@@ -34,6 +39,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                   running on the backend through simple and easy 
                                   to understand widgets, effectively simplifying 
                                   the barrier between the user and the analysis."),
+                                #explanation of the data source
                                 h3("Data Source", align="center"),
                                 p("The data used on this shiny application comes
                                    from the user 'Ashish' on Kaggle and provides
@@ -50,7 +56,9 @@ fluidPage(theme = shinytheme("cerulean"),
                                    but for the purposes of this app, we will assume
                                    that these are houses from the United States
                                    and the currency is USD."),
+                                #Link to data
                                 uiOutput("tab", align="center"),
+                                #explanation of the purpose of the tabs
                                 h3("Purpose of Tabs", align="center"),
                                 p("This app is organized into 4 pages so that
                                   the user can move through each step of the 
@@ -85,14 +93,15 @@ fluidPage(theme = shinytheme("cerulean"),
                                   align="center"),
                                 br(),
                                 br(),
-                                width=12
+                                width=12 #make sure the page extends the whole screen
                             )
                    ),
-                   tabPanel("Data Exploration",
+                   tabPanel("Data Exploration", #creation of data exploration page
                             tabsetPanel(
-                              tabPanel("Graphs",
+                              tabPanel("Graphs", #start of graphs tab
                                        sidebarLayout(
                                          sidebarPanel(h2("Select a Graph"),
+                                                      #Selection of type of graph
                                            radioButtons("typeOfGraph", 
                                                         "Which Type of Graph Would You Like to See?",
                                                         c("A Histogram of a Single Numeric Variable" = "hist",
@@ -103,6 +112,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                                           "A Boxplot of a Numerical Variable by a Categorical 
                                                           Variable" = "box"),
                                                         selected = character(0)),
+                                           #The following conditional panels are additional options for each type of graph
                                            conditionalPanel(condition = "input.typeOfGraph == 'hist'",
                                                             radioButtons("typeOfHistogram", 
                                                                          "Which Numeric Variable Should Be Used?",
@@ -247,24 +257,29 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                                           min = 0, max = 15000000, value = 15))),
                                            br(),
                                            actionButton("runGraph", strong("Create Graph"),style = "color: #428bca;")
+                                           #action button for creating the graph
                               ),
                               mainPanel(
+                                #text header for explanation on how to make graphs
                                 uiOutput("text_header5"),
                                 br(),
+                                #title for piecharts
                                 uiOutput("subtext_header7"),
+                                #Plot output
                                 plotOutput("finalPlot")
                               ))
-                            
                    ),
-                   tabPanel("Summaries",
+                   tabPanel("Summaries", #Start of summaries tab for data exploration
                             sidebarLayout(
                               sidebarPanel(h2("Select a Summary"),
+                                           #Options for numerical/categorical summaries
                                            radioButtons("typeOfSummary", 
                                                         "Which Type of Summary Would You Like to See?",
                                                         c("A Single or Multi-Level Contingency Table on One or More 
                                                           Categorical Variables" = "contingency",
                                                           "A Numerical Summary of a Single Numeric Variable" = "summary"),
                                                         selected = character(0)),
+                                           #The following are conditional panels depending on what kind of summary was selected
                                            conditionalPanel(condition = "input.typeOfSummary == 'contingency'",
                                                             radioButtons("typeOfContingencyTable", 
                                                                          "How Many Levels Should the Contingency Table Have?",
@@ -364,51 +379,64 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                                           min = 0, max = 15000000, value = 15))),
                                            br(),
                                            actionButton("runSummary", strong("Create Summary"),style = "color: #428bca;")
+                                           #action button for creating summaries
                               ),
                               mainPanel(
+                                #Explanation into how to create summaries
                                 uiOutput("text_header6"),
                                 br(),
+                                #header for contingency table
                                 uiOutput("subtext_header8"),
+                                #contingency table output
                                 verbatimTextOutput("finalSummary1"),
+                                #header for numerical summary
                                 uiOutput("subtext_header9"),
+                                #numerical summary table output
                                 dataTableOutput("finalSummary2")
                               ))
-                            
                    ))),
-                   tabPanel("Modeling",
+                   tabPanel("Modeling", #Start of modeling page
                             tabsetPanel(
-                              tabPanel("Modeling Info",
+                              tabPanel("Modeling Info", #Start of modeling info tab
                                        sidebarLayout(
                                          sidebarPanel(
                                            h2(strong("Model Choice")),
                                            br(),
+                                           #options for models to learn more about
                                            radioButtons("modelTypeInfo", 
                                                         "Which Model Would You Like to Learn More About?",
                                                         c("Multiple Linear Regression Model" = "aboutMLR",
                                                           "Bagged Tree Regression Model" = "aboutBT",
                                                           "Random Forest Model" = "aboutRF"),
                                                         selected = character(0))
-                                           
                                          ),
                                          mainPanel(
+                                           #header for whole main page
                                            uiOutput("text_header4"),
                                            br(),
+                                           #header for what the model is
                                            uiOutput("subtext_header4"),
+                                           #Explanation for what the model is
                                            uiOutput("paragraph1"),
+                                           #mathjax output
                                            uiOutput("modelMath"),
+                                           #header for advantages of model
                                            uiOutput("subtext_header5"),
+                                           #explanation of advantages of model
                                            uiOutput("paragraph2"),
+                                           #header for disadvantages of model
                                            uiOutput("subtext_header6"),
+                                           #explanation of disadvantages of model
                                            uiOutput("paragraph3"),
                                            br(),
                                            br()
-                                
                                          )
                                        )
                               ),
-                              tabPanel("Model Fitting",
+                              tabPanel("Model Fitting", #start of model fitting tab
                                        sidebarLayout(
                                          sidebarPanel(
+                                           #Training/testing split options
                                            numericInput("trainSplit",
                                                   label="Select Training Split Proportion",
                                                   value=.75, min=0, max=1,
@@ -417,6 +445,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                                   label="Select Testing Split Proportion",
                                                   value=.25, min=0, max=1,
                                                   step=.05),
+                                           #MLR options
                                            h4(strong("Multiple Linear Regression Model"), style = "color:red;"),
                                            radioButtons("mlrVariables", 
                                                               "What Variables Should be Included?",
@@ -444,6 +473,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                                         label="Number of Folds for Cross Validation",
                                                         value=5, min=1, max=10,
                                                         step=1),
+                                           #Bagged tree options
                                            h4(strong("Bagged Tree Regression Model"), style = "color:red;"),
                                            radioButtons("treeVariables", 
                                                         "What Variables Should be Included?",
@@ -473,6 +503,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                                         label="Number of Repeats for Cross Validation",
                                                         value=3, min=1, max=10,
                                                         step=1),
+                                           #random forest options
                                            h4(strong("Random Forest Model"), style = "color:red;"),
                                            radioButtons("forestVariables", 
                                                         "What Variables Should be Included?",
@@ -504,49 +535,72 @@ fluidPage(theme = shinytheme("cerulean"),
                                                         step=1),
                                            br(),
                                            actionButton("runModels", strong("Run Models"),style = "color: #428bca;")
+                                           #action button for running the models
                                          ),
                                          mainPanel(
+                                           #Overall header for model fitting page
                                            uiOutput("text_header1"),
                                            br(),
+                                           #explanation header
                                            uiOutput("subtext_header1"),
                                            br(),
+                                           #MLR summary descriptive header
                                            uiOutput("desc_header1"),
+                                           #MLR summary output
                                            verbatimTextOutput("modelSummary1"),
+                                           #MLR RMSE descriptive header
                                            uiOutput("desc_header2"),
+                                           #MLR RMSE output
                                            verbatimTextOutput("RMSE1"),
+                                           #Bagged tree summary header
                                            uiOutput("desc_header3"),
+                                           #Bagged tree output
                                            verbatimTextOutput("modelSummary2"),
+                                           #Random forest summary header
                                            uiOutput("desc_header4"),
+                                           #random forest output
                                            verbatimTextOutput("modelSummary3"),
                                            br(),
+                                           #plot header
                                            uiOutput("subtext_header2"),
                                            br(),
+                                           #MLR plot header
                                            uiOutput("desc_header5"),
+                                           #MLR plot
                                            plotOutput("plot1"),
+                                           #BT plot header
                                            uiOutput("desc_header6"),
+                                           #BT plot
                                            plotOutput("plot2"),
+                                           #RF plot header
                                            uiOutput("desc_header7"),
+                                           #RF plot
                                            plotOutput("plot3"),
                                            br(),
+                                           #Comparison header
                                            uiOutput("subtext_header3"),
+                                           #Table of comparison output
                                            tableOutput("testTable"),
+                                           #Text about which model is the best
                                            uiOutput("desc_header8"),
                                            br(),
                                            br()
                                          )
                                        )
                               ),
-                              tabPanel("Prediction",
+                              tabPanel("Prediction", #start of prediction page
                                        sidebarLayout(
                                          sidebarPanel(
                                            h2(strong("Prediction Adjustments")),
                                            br(),
+                                           #options for model to predict with
                                            radioButtons("predictModelType", 
                                                         "Which Model Would You Like to Make Predictions With?",
                                                         c("Multiple Linear Regression Model" = "predictWithMLR",
                                                           "Bagged Tree Regression Model" = "predictWithBT",
                                                           "Random Forest Model" = "predictWithRF"),
                                                         selected = character(0)),
+                                           #panel for inserting house features
                                            conditionalPanel(condition = "input.predictModelType",
                                            h3("House Attributes:"),
                                            numericInput("predictEntryArea",
@@ -600,14 +654,12 @@ fluidPage(theme = shinytheme("cerulean"),
                                                           "Unfurnished" = "unfurnished"))),
                                            br(),
                                            actionButton("getPrediction", strong("Get Prediction"),style = "color: #428bca;")
-                                                            
-                                                            
-                                                            
-                                           
+                                           #action button for creating prediction
                                          ),
                                          mainPanel(
+                                           #Explanation header for how to predict
                                            uiOutput("text_header2"),
-                                           uiOutput("prediction"),
+                                           #prediction output
                                            uiOutput("text_header3")
                                            
                                          )
@@ -615,12 +667,13 @@ fluidPage(theme = shinytheme("cerulean"),
                               )
                             )  
                    ),
-                   tabPanel("Data",
+                   tabPanel("Data", #start of data page
                             sidebarLayout(
                               sidebarPanel(
                                 h2("Subset Options", align="center"),
                                 br(),
                                 h3("Subset Columns:"),
+                                #subset column options
                                 checkboxGroupInput("columnSubsets", 
                                                    "Which Columns Should be Included?",
                                                    c("Price" = "price",
@@ -651,6 +704,7 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                 "furnishingstatus")),
                                 
                                 h3("Subset Rows:"),
+                                #subset rows options
                                 h4("Price Options:"),
                                 sliderInput("priceRange",
                                             label = "Choose a range for the price variable", 
@@ -776,17 +830,23 @@ fluidPage(theme = shinytheme("cerulean"),
                                                                 "unfurnished")),
                                 br(),
                                 actionButton("subsetData", strong("Subset Data"),style = "color: #428bca;")
+                                #action button for subsetting the data
                               ),
                               mainPanel(
+                                #title for housing data
                                 h1("The Housing Dataset", align="center"),
+                                #explaination of page
                                 h3("Please explore the data below or subset
                                    it with the panel on the left. Don't forget
                                    to click the submit button at the botton 
                                    after making adjustments!"),
                                 br(),
+                                #table output
                                 dataTableOutput("dataTable"),
+                                #download explanation
                                 h3("Interested in saving the data? Click the 
                                     download button below!"),
+                                #download button
                                 downloadButton('downloadCSV',"Download", 
                                                style = "color: #428bca;"),
                                 br()
@@ -794,6 +854,4 @@ fluidPage(theme = shinytheme("cerulean"),
                             )
                    ),
         fluid=TRUE)
-)
-
-
+) #end of UI
