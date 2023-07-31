@@ -4,6 +4,8 @@ library(tidyverse)
 library(caret)
 library(scales)
 library(DT)
+library(stringr)
+library(ggrepel)
 
 
 shinyServer(function(input, output, session) {
@@ -33,6 +35,8 @@ shinyServer(function(input, output, session) {
                            Price!")
   getTitle3 <- reactiveVal("")
   getTitle4 <- reactiveVal("Select a Model on the Left to Learn More About it!")
+  getTitle5 <- reactiveVal("Select a Graph or Summary on the Left and Click 
+                           Create Graph/Summary to View it Here!")
   
   getSubTitle1 <- reactiveVal("")
   getSubTitle2 <- reactiveVal("")
@@ -40,6 +44,7 @@ shinyServer(function(input, output, session) {
   getSubTitle4 <- reactiveVal("")
   getSubTitle5 <- reactiveVal("")
   getSubTitle6 <- reactiveVal("")
+  getSubTitle7 <- reactiveVal("")
   
   getDescTitle1 <- reactiveVal("")
   getDescTitle2 <- reactiveVal("")
@@ -66,6 +71,9 @@ shinyServer(function(input, output, session) {
   output$text_header4 <- renderUI({
     h1(getTitle4(), align = "center")
   })
+  output$text_header5 <- renderUI({
+    h1(getTitle5(), align = "center")
+  })
   
   
   output$subtext_header1 <- renderUI({
@@ -85,6 +93,9 @@ shinyServer(function(input, output, session) {
   })
   output$subtext_header6 <- renderUI({
     h4(getSubTitle6(), align = "left")
+  })
+  output$subtext_header7 <- renderUI({
+    h4(getSubTitle7(), align = "center")
   })
   
   
@@ -125,52 +136,329 @@ shinyServer(function(input, output, session) {
 
   
   
-  observeEvent(input$trainSplit, {
-    change <- 1-input$trainSplit
-    updateNumericInput(session, "testSplit", value=change)
+  
+  
+  observeEvent(input$runGraph, {
+    if (input$typeOfGraph %in% c("hist", "pie", "scatter", "bar", "box")){
+      getTitle5("Here is the Graph!")
+    } else if (input$typeOfGraph %in% c("contingency", "summary")){
+      getTitle5("Here is the Summary!")
+    }
+    
+    newData <- getData()
+    
+    if (input$typeOfGraph == "hist"){
+      getSubTitle7("")
+      if(input$histogramSubset=="no"){
+        basePlot <- ggplot(newData, aes(!!sym(input$typeOfHistogram)))
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_histogram(bins=input$numBins, fill="#428bca") +
+          labs(x = str_to_title(input$typeOfHistogram), y = "Frequency", 
+              title = paste("Histogram of", str_to_title(input$typeOfHistogram))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+          #Centering the title
+      }else if(input$histogramSubset == "yes") {
+        
+        subsettedData <- newData %>% 
+          filter((!!sym(input$typeOfHistogram)) >= input$lowRangeHist,
+                 (!!sym(input$typeOfHistogram)) <= input$highRangeHist)
+
+        basePlot <- ggplot(subsettedData, aes(!!sym(input$typeOfHistogram)))
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_histogram(bins=input$numBins, fill="#428bca") +
+          labs(x = str_to_title(input$typeOfHistogram), y = "Frequency", 
+               title = paste("Histogram of", str_to_title(input$typeOfHistogram))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }
+      output$finalPlot <- renderPlot({finalGraph})
+    }
+    
+    if (input$typeOfGraph == "pie"){
+      if(input$typeOfPiechart == "mainroad"){
+        getSubTitle7("Piechart of Mainroad Variable")
+        counts <- data.frame(table(newData$mainroad))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, 
+                             aes(x = "" , y = value, fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, 
+                               label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "Mainroad")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "guestroom"){
+        getSubTitle7("Piechart of Guestroom Variable")
+        counts <- data.frame(table(newData$guestroom))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, 
+                             aes(x = "" , y = value, fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, 
+                               label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "Guestroom")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "basement"){
+        getSubTitle7("Piechart of Basement Variable")
+        counts <- data.frame(table(newData$basement))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, 
+                             aes(x = "" , y = value, fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, 
+                               label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "Basement")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "hotwaterheating"){
+        getSubTitle7("Piechart of HotWaterHeating Variable")
+        counts <- data.frame(table(newData$hotwaterheating))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, 
+                             aes(x = "" , y = value, fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "HotWaterHeating")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "airconditioning"){
+        getSubTitle7("Piechart of Airconditioning Variable")
+        counts <- data.frame(table(newData$airconditioning))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, 
+                             aes(x = "" , y = value, fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, 
+                               label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "Airconditioning")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "prefarea"){
+        getSubTitle7("Piechart of PreferredArea Variable")
+        counts <- data.frame(table(newData$prefarea))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, aes(x = "" , y = value, 
+                                         fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, 
+                               label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "PreferredArea")) +
+          theme_void()
+      }else if(input$typeOfPiechart == "furnishingstatus"){
+        getSubTitle7("Piechart of FurnishingStatus Variable")
+        counts <- data.frame(table(newData$furnishingstatus))
+        names(counts)[1] <- "group"
+        names(counts)[2] <- "value"
+        df2 <- counts %>% 
+          mutate(csum = rev(cumsum(rev(value))), 
+                 pos = value/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), value/2, pos))
+        
+        finalGraph <- ggplot(counts, aes(x = "" , y = value, 
+                                         fill = fct_inorder(group))) +
+          geom_col(width = 1, color = 1) +
+          coord_polar(theta = "y") +
+          geom_label_repel(data = df2,
+                           aes(y = pos, label = paste0((round(value/545,4)*100), "%")),
+                           size = 4.5, nudge_x = 1, show.legend = FALSE) +
+          guides(fill = guide_legend(title = "FurnishingStatus")) +
+          theme_void()
+      }
+      output$finalPlot <- renderPlot({finalGraph})
+    }
+    
+    if (input$typeOfGraph == "scatter"){
+      getSubTitle7("")
+      if(input$scatterSubset == "no"){
+        basePlot <- ggplot(newData, aes(x=!!sym(input$xScatter), 
+                                        y=!!sym(input$yScatter)))
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_point(color="#428bca") +
+          labs(x = str_to_title(input$xScatter), y = str_to_title(input$yScatter), 
+               title = paste("Scatter Plot of", str_to_title(input$yScatter), "Vs", 
+                             str_to_title(input$xScatter))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }else if(input$scatterSubset == "yes") {
+        
+        subsettedData <- newData %>% 
+          filter((!!sym(input$yScatter)) >= input$lowRangeScatter1,
+                 (!!sym(input$yScatter)) <= input$highRangeScatter1,
+                 (!!sym(input$xScatter)) >= input$lowRangeScatter2,
+                 (!!sym(input$xScatter)) <= input$highRangeScatter2)
+        
+        basePlot <- ggplot(subsettedData, aes(x=!!sym(input$xScatter), 
+                                              y=!!sym(input$yScatter)))
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_point(color="#428bca") +
+          labs(x = str_to_title(input$xScatter), y = str_to_title(input$yScatter), 
+               title = paste("Scatter Plot of", str_to_title(input$yScatter), "Vs", 
+                             str_to_title(input$xScatter))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }
+      output$finalPlot <- renderPlot({finalGraph})
+    }
+    
+    if (input$typeOfGraph == "bar"){
+      getSubTitle7("")
+      if(input$barplotSubset == "no"){
+        numeric_summary <- newData %>% group_by(!!sym(input$typeOfBarplotCat)) %>% 
+          summarise(Average = mean(!!sym(input$typeOfBarplotNum)))
+        
+        basePlot <- ggplot(numeric_summary, 
+                           aes(x=!!sym(input$typeOfBarplotCat), y=Average, 
+                               fill=!!sym(input$typeOfBarplotCat))) 
+        
+        finalGraph <- basePlot + geom_bar(stat='identity') +
+          labs(x = str_to_title(input$typeOfBarplotCat), 
+               y = paste("Average", str_to_title(input$typeOfBarplotNum)), 
+               title = paste("Boxplot of Average", 
+                             str_to_title(input$typeOfBarplotNum), "by", 
+                             str_to_title(input$typeOfBarplotCat))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }else if(input$barplotSubset == "yes"){
+        
+        subsettedData <- newData %>% 
+          filter((!!sym(input$typeOfBarplotNum)) >= input$lowRangeBar,
+                 (!!sym(input$typeOfBarplotNum)) <= input$highRangeBar)
+        
+        numeric_summary <- subsettedData %>% group_by(!!sym(input$typeOfBarplotCat)) %>% 
+          summarise(Average = mean(!!sym(input$typeOfBarplotNum)))
+        
+        basePlot <- ggplot(numeric_summary, 
+                           aes(x=!!sym(input$typeOfBarplotCat),y=Average, 
+                               fill=!!sym(input$typeOfBarplotCat))) 
+        
+        finalGraph <- basePlot + geom_bar(stat='identity') +
+          labs(x = str_to_title(input$typeOfBarplotCat), 
+               y = paste("Average", str_to_title(input$typeOfBarplotNum)), 
+               title = paste("Barplot of Average", 
+                             str_to_title(input$typeOfBarplotNum), "by", 
+                             str_to_title(input$typeOfBarplotCat))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }
+      output$finalPlot <- renderPlot({finalGraph})
+    }
+    
+    if (input$typeOfGraph == "box"){
+      getSubTitle7("")
+      if(input$boxplotSubset == "no"){
+        set.seed(558) #setting seed for reproducibility 
+        basePlot <- ggplot(newData, aes(x = (!!sym(input$typeOfBoxplotCat)), 
+                                        y = (!!sym(input$typeOfBoxplotNum)))) 
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_boxplot() + 
+          geom_point(aes(color=(!!sym(input$typeOfBoxplotCat))), position="jitter") +
+          labs(x = str_to_title(input$typeOfBoxplotCat), y = str_to_title(input$typeOfBoxplotNum), 
+               title = paste("Boxplot of", str_to_title(input$typeOfBoxplotNum), "by", 
+                             str_to_title(input$typeOfBoxplotCat))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+      }else if(input$boxplotSubset == "yes"){
+        
+        subsettedData <- newData %>% 
+          filter((!!sym(input$typeOfBoxplotNum)) >= input$lowRangeBox,
+                 (!!sym(input$typeOfBoxplotNum)) <= input$highRangeBox)
+        
+        set.seed(558) #setting seed for reproducibility 
+        basePlot <- ggplot(subsettedData, aes(x = (!!sym(input$typeOfBoxplotCat)), 
+                                        y = (!!sym(input$typeOfBoxplotNum)))) 
+        #Creating the base of the plot
+        finalGraph <- basePlot + geom_boxplot() + 
+          geom_point(aes(color=(!!sym(input$typeOfBoxplotCat))), position="jitter") +
+          labs(x = str_to_title(input$typeOfBoxplotCat), y = str_to_title(input$typeOfBoxplotNum), 
+               title = paste("Boxplot of", str_to_title(input$typeOfBoxplotNum), "by", 
+                             str_to_title(input$typeOfBoxplotCat))) +
+          #Adding descriptive labels
+          theme(plot.title = element_text(hjust = 0.5)) 
+        #Centering the title
+        
+      }
+      output$finalPlot <- renderPlot({finalGraph})
+    }
+    
+    if (input$typeOfGraph == "contingency"){
+      getSubTitle7("")
+      output$finalPlot <- renderPlot("")
+      if(input$typeOfContingencyTable == "one"){
+        finalGraph <- table(newData[, input$singleCatVar])
+      }else if(input$typeOfContingencyTable == "two"){
+        finalGraph <- table(newData[, c(input$doubleCatVar1, input$doubleCatVar2)])
+      }
+      else if(input$typeOfContingencyTable == "three"){
+        finalGraph <- table(newData[, c(input$tripleCatVar1, input$tripleCatVar2, input$tripleCatVar3)])
+      }
+      output$finalSum <- renderPrint(finalGraph)
+      
+    }
+      
+      
+      
+      
+    
+    
+    
   })
-  
-  observeEvent(input$testSplit, {
-    change <- 1-input$testSplit
-    updateNumericInput(session, "trainSplit", value=change)
-  })
-  
-  observeEvent(input$lowAreaRange | input$highAreaRange, {
-    
-    updateSliderInput(session, "areaRange", value=c(input$lowAreaRange, input$highAreaRange))
-    
-  })
-  
-  observeEvent(input$areaRange, {
-    
-    value <- input$areaRange
-    lower <- value[1]
-    upper <- value[2]
-    
-    updateNumericInput(session, "lowAreaRange", value=lower)
-    updateNumericInput(session, "highAreaRange", value=upper)
-    
-  })
-  
-  observeEvent(input$lowPriceRange | input$highPriceRange, {
-    
-    updateSliderInput(session, "priceRange", value=c(input$lowPriceRange, input$highPriceRange))
-    
-  })
-  
-  observeEvent(input$priceRange, {
-    
-    value <- input$priceRange
-    lower <- value[1]
-    upper <- value[2]
-    
-    updateNumericInput(session, "lowPriceRange", value=lower)
-    updateNumericInput(session, "highPriceRange", value=upper)
-    
-  })
-  
-  
-  
   
   
   observeEvent(input$modelTypeInfo, {
@@ -330,7 +618,18 @@ shinyServer(function(input, output, session) {
     }
   })
     
+    
+  observeEvent(input$trainSplit, {
+    change <- 1-input$trainSplit
+    updateNumericInput(session, "testSplit", value=change)
+  })
+    
+  observeEvent(input$testSplit, {
+    change <- 1-input$testSplit
+    updateNumericInput(session, "trainSplit", value=change)
+  })
   
+    
   observeEvent(input$runModels, {
     
     set.seed(558) #setting seed for reproducibility 
@@ -603,6 +902,41 @@ shinyServer(function(input, output, session) {
     getTitle3(finalPrediction)
     
     })
+    
+  })
+  
+  
+  observeEvent(input$lowAreaRange | input$highAreaRange, {
+    
+    updateSliderInput(session, "areaRange", value=c(input$lowAreaRange, input$highAreaRange))
+    
+  })
+  
+  observeEvent(input$areaRange, {
+    
+    value <- input$areaRange
+    lower <- value[1]
+    upper <- value[2]
+    
+    updateNumericInput(session, "lowAreaRange", value=lower)
+    updateNumericInput(session, "highAreaRange", value=upper)
+    
+  })
+  
+  observeEvent(input$lowPriceRange | input$highPriceRange, {
+    
+    updateSliderInput(session, "priceRange", value=c(input$lowPriceRange, input$highPriceRange))
+    
+  })
+  
+  observeEvent(input$priceRange, {
+    
+    value <- input$priceRange
+    lower <- value[1]
+    upper <- value[2]
+    
+    updateNumericInput(session, "lowPriceRange", value=lower)
+    updateNumericInput(session, "highPriceRange", value=upper)
     
   })
   

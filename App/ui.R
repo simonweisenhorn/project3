@@ -26,30 +26,318 @@ fluidPage(theme = shinytheme("cerulean"),
                                     align="center"),
                                 h3("Purpose of this App", align="center"),
                                 p("The purpose of this app is to allow users an
-                                  interactive and exploratory experience with 
-                                  some housing data, while also avoiding the need 
-                                  to know how to code in R. The user should be able to adjust
-                                  or customize all of the inputs for the code running
-                                  on the backend through simple and easy to understand
-                                  widgets, simplifying the barrier between the 
-                                  user and the analysis."),
+                                  interactive, investigative and exploratory 
+                                  experience with some housing data, all while 
+                                  also avoiding the need to know how to code in 
+                                  R. The user should be able to adjust or 
+                                  customize all of the inputs for the code 
+                                  running on the backend through simple and easy 
+                                  to understand widgets, effectively simplifying 
+                                  the barrier between the user and the analysis."),
                                 h3("Data Source", align="center"),
-                                p("The data has been sourced from Kaggle",
-                                  align="center"),
+                                p("The data used on this shiny application comes
+                                   from the user 'Ashish' on Kaggle and provides
+                                   the characteristics of 545 different homes ranging
+                                   from the number of bedrooms and bathrooms to
+                                   the furnished status of the home. The data
+                                   contains a total of 13 variables, where the
+                                   singular sale price variable will be used as
+                                   the target response and the other 12 will be
+                                   used as predictors. Unfortunately, there was
+                                   not a proper file provided on the meta data
+                                   so it is not clear which country the houses
+                                   are based in or the currency of the sale price,
+                                   but for the purposes of this app, we will assume
+                                   that these are houses from the United States
+                                   and the currency is USD."),
                                 uiOutput("tab", align="center"),
                                 h3("Purpose of Tabs", align="center"),
-                                p("The tabs are to organize this app",
+                                p("This app is organized into 4 pages so that
+                                  the user can move through each step of the 
+                                  analysis. Currently, we are on the about
+                                  page. This page is to give users a chance to
+                                  be introduced to the app and provide an intution
+                                  into the data source. The next page over is 
+                                  dedicated to allow the user to explore the data.
+                                  
+                                  COME BACK TO THIS
+                                  
+                                  
+                                  ",
                                   align="center"),
                                 br(),
                                 width=12
                             )
                    ),
                    tabPanel("Data Exploration",
-                            sidebarLayout(
-                              sidebarPanel(
+                            tabsetPanel(
+                              tabPanel("Graphs",
+                                       sidebarLayout(
+                                         sidebarPanel(h2("Select a Graph or Summary"),
+                                           radioButtons("typeOfGraph", 
+                                                        "Which Type of Graph or Summary Would Like to See?",
+                                                        c("A Histogram of a Single Numeric Variable" = "hist",
+                                                          "A Piechart of a Single Categorical Variable" = "pie",
+                                                          "A Scatter Plot of Two Numerical Variables" = "scatter",
+                                                          "A Bar Plot of the Average Value of a Numeric Variable 
+                                                          by a Categorical Variable" = "bar",
+                                                          "A Boxplot of a Numerical Variable by a Categorical 
+                                                          Variable" = "box"),
+                                                        selected = character(0)),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'hist'",
+                                                            radioButtons("typeOfHistogram", 
+                                                                         "Which Numeric Variable Should Be Used?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            numericInput("numBins",
+                                                                         label="Select the Number of Bins",
+                                                                         value=30, min=0, max=100,
+                                                                         step=5),
+                                                            radioButtons("histogramSubset", 
+                                                                        "Should the Values of the Numeric Variable be Subsetted?",
+                                                                        c("Yes" = "yes",
+                                                                          "No" = "no"),
+                                                                        selected = "no"),
+                                                            conditionalPanel(condition = "input.histogramSubset == 'yes'",
+                                                                             numericInput("lowRangeHist",
+                                                                                          "Choose a Minimum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRangeHist",
+                                                                                          "Choose a Maximum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 15))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'pie'",
+                                                            radioButtons("typeOfPiechart", 
+                                                                         "Which Categorical Variable Should Be Used?",
+                                                                         c("Mainroad" = "mainroad",
+                                                                           "Guestroom" = "guestroom",
+                                                                           "Basement" = "basement",
+                                                                           "HotWaterHeating" = "hotwaterheating",
+                                                                           "Airconditioning" = "airconditioning",
+                                                                           "PreferredArea" = "prefarea",
+                                                                           "FurnishingStatus" = "furnishingstatus"),
+                                                                         selected = character(0))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'scatter'",
+                                                            radioButtons("yScatter", 
+                                                                         "Which Numeric Variable Should Be on the Y Axis?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            radioButtons("xScatter", 
+                                                                         "Which Numeric Variable Should Be on the X Axis?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            radioButtons("scatterSubset", 
+                                                                         "Should the Values of the Numeric Variables be Subsetted?",
+                                                                         c("Yes" = "yes",
+                                                                           "No" = "no"),
+                                                                         selected = "no"),
+                                                            conditionalPanel(condition = "input.scatterSubset == 'yes'",
+                                                                             numericInput("lowRangeScatter1",
+                                                                                          "Choose a Minimum for the Numeric 
+                                                                                          Variable on the Y Axis:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRangeScatter1",
+                                                                                          "Choose a Maximum for the Numeric 
+                                                                                          Variable on the Y Axis:",
+                                                                                          min = 0, max = 15000000, value = 15),
+                                                                             numericInput("lowRangeScatter2",
+                                                                                          "Choose a Minimum for the Numeric 
+                                                                                          Variable on the X Axis:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRangeScatter2",
+                                                                                          "Choose a Maximum for the Numeric 
+                                                                                          Variable on the X Axis:",
+                                                                                          min = 0, max = 15000000, value = 15))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'bar'",
+                                                            radioButtons("typeOfBarplotNum", 
+                                                                         "Which Numeric Variable Should Be Used?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            radioButtons("typeOfBarplotCat", 
+                                                                         "Which Categorical Variable Should Be Used?",
+                                                                         c("Mainroad" = "mainroad",
+                                                                           "Guestroom" = "guestroom",
+                                                                           "Basement" = "basement",
+                                                                           "HotWaterHeating" = "hotwaterheating",
+                                                                           "Airconditioning" = "airconditioning",
+                                                                           "PreferredArea" = "prefarea",
+                                                                           "FurnishingStatus" = "furnishingstatus"),
+                                                                         selected = character(0)),
+                                                            radioButtons("barplotSubset", 
+                                                                         "Should the Values of the Numeric Variable be Subsetted?",
+                                                                         c("Yes" = "yes",
+                                                                           "No" = "no"),
+                                                                         selected = "no"),
+                                                            conditionalPanel(condition = "input.barplotSubset == 'yes'",
+                                                                             numericInput("lowRangeBar",
+                                                                                          "Choose a Minimum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRangeBar",
+                                                                                          "Choose a Maximum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 15))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'box'",
+                                                            radioButtons("typeOfBoxplotNum", 
+                                                                         "Which Numeric Variable Should Be Used?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            radioButtons("typeOfBoxplotCat", 
+                                                                         "Which Categorical Variable Should Be Used?",
+                                                                         c("Mainroad" = "mainroad",
+                                                                           "Guestroom" = "guestroom",
+                                                                           "Basement" = "basement",
+                                                                           "HotWaterHeating" = "hotwaterheating",
+                                                                           "Airconditioning" = "airconditioning",
+                                                                           "PreferredArea" = "prefarea",
+                                                                           "FurnishingStatus" = "furnishingstatus"),
+                                                                         selected = character(0)),
+                                                            radioButtons("boxplotSubset", 
+                                                                         "Should the Values of the Numeric Variable be Subsetted?",
+                                                                         c("Yes" = "yes",
+                                                                           "No" = "no"),
+                                                                         selected = "no"),
+                                                            conditionalPanel(condition = "input.boxplotSubset == 'yes'",
+                                                                             numericInput("lowRangeBox",
+                                                                                          "Choose a Minimum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRangeBox",
+                                                                                          "Choose a Maximum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 15))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'contingency'",
+                                                            radioButtons("typeOfContingencyTable", 
+                                                                         "How Many Levels Should the Contingency Table Have?",
+                                                                         c("One" = "one",
+                                                                           "Two" = "two",
+                                                                           "Three" = "three"),
+                                                                         selected = character(0)),
+                                                            conditionalPanel(condition = "input.typeOfContingencyTable == 'one'",
+                                                                             radioButtons("singleCatVar", 
+                                                                                          "Which Categorical Variable Should Be Used?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0))),
+                                                            conditionalPanel(condition = "input.typeOfContingencyTable == 'two'",
+                                                                             radioButtons("doubleCatVar1", 
+                                                                                          "Which Categorical Variable Should 
+                                                                                          Be Used for the First Level?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0)),
+                                                                             radioButtons("doubleCatVar2", 
+                                                                                          "Which Categorical Variable Should 
+                                                                                          Be Used for the Second Level?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0))),
+                                                            conditionalPanel(condition = "input.typeOfContingencyTable == 'three'",
+                                                                             radioButtons("tripleCatVar1", 
+                                                                                          "Which Categorical Variable Should 
+                                                                                          Be Used for the First Level?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0)),
+                                                                             radioButtons("tripleCatVar2", 
+                                                                                          "Which Categorical Variable Should 
+                                                                                          Be Used for the Second Level?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0)),
+                                                                             radioButtons("tripleCatVar3", 
+                                                                                          "Which Categorical Variable Should 
+                                                                                          Be Used for the Third Level?",
+                                                                                          c("Mainroad" = "mainroad",
+                                                                                            "Guestroom" = "guestroom",
+                                                                                            "Basement" = "basement",
+                                                                                            "HotWaterHeating" = "hotwaterheating",
+                                                                                            "Airconditioning" = "airconditioning",
+                                                                                            "PreferredArea" = "prefarea",
+                                                                                            "FurnishingStatus" = "furnishingstatus"),
+                                                                                          selected = character(0)))),
+                                           conditionalPanel(condition = "input.typeOfGraph == 'summary'",
+                                                            radioButtons("typeOfSummary", 
+                                                                         "Which Numeric Variable Should Be Used?",
+                                                                         c("Price" = "price",
+                                                                           "Area" = "area",
+                                                                           "Bedrooms" = "bedrooms",
+                                                                           "Bathrooms" = "bathrooms",
+                                                                           "Stories" = "stories",
+                                                                           "Parking" = "parking"),
+                                                                         selected = character(0)),
+                                                            radioButtons("summarySubset", 
+                                                                         "Should the Values of the Numeric Variable be Subsetted?",
+                                                                         c("Yes" = "yes",
+                                                                           "No" = "no"),
+                                                                         selected = "no"),
+                                                            conditionalPanel(condition = "input.summarySubset == 'yes'",
+                                                                             numericInput("lowRange",
+                                                                                          "Choose a Minimum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 1),
+                                                                             numericInput("highRange",
+                                                                                          "Choose a Maximum for the Numeric Variable:",
+                                                                                          min = 0, max = 15000000, value = 15))),
+                                           br(),
+                                           actionButton("runGraph", strong("Create Graph/Summary"),style = "color: #428bca;")
+                                           
+                                           
+                                           
+                                           
+                                                            
                                 
                               ),
                               mainPanel(
+                                uiOutput("text_header5"),
+                                br(),
+                                uiOutput("subtext_header7"),
+                                plotOutput("finalPlot"),
+                                verbatimTextOutput("finalSum")
                                 
                               )
                             )
